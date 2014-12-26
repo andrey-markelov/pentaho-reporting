@@ -24,6 +24,7 @@ import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+
 import javax.swing.Action;
 
 import org.pentaho.reporting.designer.core.ReportDesignerBoot;
@@ -42,97 +43,111 @@ import org.pentaho.reporting.libraries.resourceloader.ResourceException;
 import org.pentaho.reporting.libraries.resourceloader.ResourceKey;
 import org.pentaho.reporting.libraries.resourceloader.ResourceManager;
 
-public final class SaveReportAsAction extends AbstractReportContextAction
+public final class SaveReportAsAction extends AbstractSaveReportAction
 {
-  public SaveReportAsAction()
-  {
+
+  @Override
+  protected void init() {
     putValue(Action.NAME, ActionMessages.getString("SaveAsReport.Text"));
     putValue(Action.SHORT_DESCRIPTION, ActionMessages.getString("SaveAsReport.Description"));
     putValue(Action.MNEMONIC_KEY, ActionMessages.getMnemonic("SaveAsReport.Mnemonic"));
     putValue(Action.SMALL_ICON, IconLoader.getInstance().getSaveIcon());
     putValue(Action.ACCELERATOR_KEY, ActionMessages.getKeyStroke("SaveAsReport.Accelerator"));
   }
+  
+  @Override
+  protected File getTarget(MasterReport report, Component parent) {
+    ResourceKey definitionSource = report.getDefinitionSource();
+    File target = SaveReportUtilities.getCurrentFile( definitionSource );
+    
+    // Prompt for the filename
+    target = SaveReportUtilities.promptReportFilename( parent, null );
+
+    
+    return target;
+  }
+ 
 
   /**
    * Invoked when an action occurs.
    */
-  public void actionPerformed(final ActionEvent e)
-  {
-    final ReportDocumentContext activeContext = getReportDesignerContext().getActiveContext();
-    if (activeContext == null)
-    {
-      return;
-    }
-    final Component parent = getReportDesignerContext().getView().getParent();
-
-    saveReportAs(getReportDesignerContext(), activeContext, parent);
-  }
-
-  public static boolean saveReportAs(final ReportDesignerContext context,
-                                     final ReportDocumentContext activeContext,
-                                     final Component parent)
-  {
-    // Get the current file target
-    final MasterReport report = activeContext.getContextRoot();
-    final ResourceKey definitionSource = report.getDefinitionSource();
-    final File defaultFile = SaveReportUtilities.getCurrentFile(definitionSource);
-
-    // Prompt for the filename
-    final File target = SaveReportUtilities.promptReportFilename(parent, defaultFile);
-    if (target == null)
-    {
-      return false;
-    }
-
-    try
-    {
-      report.setAttribute(ReportDesignerBoot.DESIGNER_NAMESPACE, "report-save-path", target.getCanonicalPath()); // NON-NLS
-    }
-    catch (IOException ioe)
-    {
-      // then let's not set the save path attribute
-    }
-
-
-    // Save the report
-    if (SaveReportUtilities.saveReport(context, activeContext, target))
-    // Update the definition source to be the location from which the file is saved
-    {
-      try
-      {
-        // Update the definition source to be the location from which the file is saved
-        final ResourceManager resourceManager = report.getResourceManager();
-        final Resource bundleResource = resourceManager.createDirectly(target, DocumentBundle.class);
-        final DocumentBundle bundle = (DocumentBundle) bundleResource.getResource();
-        final ResourceKey bundleKey = bundle.getBundleKey();
-        report.setDefinitionSource(bundleKey);
-        report.setContentBase(bundleKey);
-        report.setBundle(bundle);
-        report.setResourceManager(bundle.getResourceManager());
-        activeContext.resetChangeTracker();
-      }
-      catch (ResourceException e)
-      {
-        UncaughtExceptionsModel.getInstance().addException(e);
-      }
-      return true;
-    }
-
-    final ExceptionDialog exceptionDialog;
-    final Window window = LibSwingUtil.getWindowAncestor(parent);
-    if (window instanceof Dialog)
-    {
-      exceptionDialog = new ExceptionDialog((Dialog) window);
-    }
-    else if (window instanceof Frame)
-    {
-      exceptionDialog = new ExceptionDialog((Frame) window);
-    }
-    else
-    {
-      exceptionDialog = new ExceptionDialog();
-    }
-    exceptionDialog.showDialog();
-    return false;
-  }
+//  public void actionPerformed(final ActionEvent e)
+//  {
+//    final ReportDocumentContext activeContext = getReportDesignerContext().getActiveContext();
+//    if (activeContext == null)
+//    {
+//      return;
+//    }
+//    final Component parent = getReportDesignerContext().getView().getParent();
+//
+//    saveReportAs(getReportDesignerContext(), activeContext, parent);
+//  }
+//
+//  public static boolean saveReportAs(final ReportDesignerContext context,
+//                                     final ReportDocumentContext activeContext,
+//                                     final Component parent)
+//  {
+//    // Get the current file target
+//    final MasterReport report = activeContext.getContextRoot();
+//    final ResourceKey definitionSource = report.getDefinitionSource();
+//    final File defaultFile = SaveReportUtilities.getCurrentFile(definitionSource);
+//
+//    // Prompt for the filename
+//    final File target = SaveReportUtilities.promptReportFilename(parent, defaultFile);
+//    if (target == null)
+//    {
+//      return false;
+//    }
+//
+//    try
+//    {
+//      report.setAttribute(ReportDesignerBoot.DESIGNER_NAMESPACE, "report-save-path", target.getCanonicalPath()); // NON-NLS
+//    }
+//    catch (IOException ioe)
+//    {
+//      // then let's not set the save path attribute
+//    }
+//
+//
+//    // Save the report
+//    if (SaveReportUtilities.saveReport(context, activeContext, target))
+//    // Update the definition source to be the location from which the file is saved
+//    {
+//      try
+//      {
+//        // Update the definition source to be the location from which the file is saved
+//        final ResourceManager resourceManager = report.getResourceManager();
+//        final Resource bundleResource = resourceManager.createDirectly(target, DocumentBundle.class);
+//        final DocumentBundle bundle = (DocumentBundle) bundleResource.getResource();
+//        final ResourceKey bundleKey = bundle.getBundleKey();
+//        report.setDefinitionSource(bundleKey);
+//        report.setContentBase(bundleKey);
+//        report.setBundle(bundle);
+//        report.setResourceManager(bundle.getResourceManager());
+//        activeContext.resetChangeTracker();
+//      }
+//      catch (ResourceException e)
+//      {
+//        UncaughtExceptionsModel.getInstance().addException(e);
+//      }
+//      return true;
+//    }
+//
+//    final ExceptionDialog exceptionDialog;
+//    final Window window = LibSwingUtil.getWindowAncestor(parent);
+//    if (window instanceof Dialog)
+//    {
+//      exceptionDialog = new ExceptionDialog((Dialog) window);
+//    }
+//    else if (window instanceof Frame)
+//    {
+//      exceptionDialog = new ExceptionDialog((Frame) window);
+//    }
+//    else
+//    {
+//      exceptionDialog = new ExceptionDialog();
+//    }
+//    exceptionDialog.showDialog();
+//    return false;
+//  }
 }
